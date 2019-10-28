@@ -230,7 +230,7 @@ export class EmbedBuilder<T> {
 
   get embedUrl () {
     const params = stringify(this._params)
-    return `/embed/${this.type}s/${this.id}?${params}`
+    return `/embed/${this.type}s-next/${this.id}?${params}`
   }
 
   /**
