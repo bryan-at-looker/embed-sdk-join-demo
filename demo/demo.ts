@@ -25,11 +25,17 @@ import { LookerEmbedSDK, LookerEmbedLook, LookerEmbedDashboard } from '../src/in
  */
 
 import { lookerHost, dashboardId, lookId } from './demo_config'
+import { DashboardEvent, LookerEmbedFilterParams } from '../src/types'
 
 LookerEmbedSDK.init(lookerHost, '/auth')
 
-const setupDashboard = (dashboard: LookerEmbedDashboard) => {
+let gEvent: DashboardEvent
+let gFilters: LookerEmbedFilterParams
+let gDashboard: LookerEmbedDashboard
 
+const setupDashboard = (dashboard: LookerEmbedDashboard) => {
+  gDashboard = dashboard
+  
 }
 
 const setupLook = (look: LookerEmbedLook) => {

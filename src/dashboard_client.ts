@@ -24,6 +24,7 @@
 
 import { LookerEmbedFilterParams } from './types'
 import { LookerEmbedBase } from './embed_base'
+import { ElementOptions } from './element_options'
 
 /**
  * Client that communicates with an embedded Looker dashboard. Messages are documented
@@ -47,5 +48,15 @@ export class LookerEmbedDashboard extends LookerEmbedBase {
 
   updateFilters (params: LookerEmbedFilterParams) {
     this.send('dashboard:filters:update', { filters: params })
+  }
+
+  /**
+   * Convenience method for setting the options for elements on an embedded dashboard.
+   *
+   * @param options An array of element options to set
+   */
+
+  setOptions (options: ElementOptions) {
+    this.send('dashboard:options:set', options)
   }
 }
