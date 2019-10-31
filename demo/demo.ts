@@ -61,12 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
   if (dashboardId) {
     LookerEmbedSDK.createDashboardWithId(dashboardId)
       .appendTo('#dashboard')
-      .on('dashboard:run:start', () => updateState('#dashboard-state', 'Running'))
-      .on('dashboard:run:complete', () => updateState('#dashboard-state', 'Done'))
-      .on('drillmenu:click', canceller)
-      .on('drillmodal:explore', canceller)
-      .on('dashboard:tile:explore', canceller)
-      .on('dashboard:tile:view', canceller)
       .withClassName('looker-embed')
       .build()
       .connect()
