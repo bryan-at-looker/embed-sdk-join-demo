@@ -33,12 +33,6 @@ const setupDashboard = (dashboard: LookerEmbedDashboard) => {
   if (runButton) {
     runButton.addEventListener('click', () => dashboard.run())
   }
-  const stateFilter = document.querySelector('#state-filter')
-  if (stateFilter) {
-    stateFilter.addEventListener('change', (event) => {
-      dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
-    })
-  }
 }
 
 const setupLook = (look: LookerEmbedLook) => {
