@@ -30,7 +30,7 @@ but its not running on click... lets add a run event
 - Lets have FUN
 - Dense Dashboard, lets make it dynamic
 - [Edit Dashboard](https://master.dev.looker.com/dashboards/2467)
-- Add KPIs filter (Total Gross Margin) as the Default
+- Add KPIs filter (Active Users) as the Default
 - Add Filter Options in dNext
 - Selective Show KPI
 - Lets Code some more
@@ -39,10 +39,9 @@ but its not running on click... lets add a run event
 
 ### Layout and vis [>>](./options.example.json)
 
-[>>](./demo.ts?line=90)
+[>>](./demo.ts?line=77)
 
 ```
-.on('dashboard:filters:changed', filtersChanged )
 .on('dashboard:run:complete', dashboardRunComplete)
 ```
 ```
@@ -53,23 +52,6 @@ const dashboardRunComplete = (event: DashboardEvent) => {
   newLayout(event.dashboard.dashboard_filters['KPIs'].split(','))
 }
 ```
-
-
-```
-const filtersChanged = (event: DashboardEvent) => {
-  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
-  // update layout to match KPI filter
-  if (gEvent) {
-    if (filters['KPIs']) {
-      newLayout(filters['KPIs'].split(',') )
-    } else {
-      newLayout([''])
-    }
-  }
-  gFilters = filters
-}
-```
-
 
 ### Logic to control the layout changes
 ```
@@ -98,3 +80,24 @@ const newLayout = (kpis: string[]) => {
   gDashboard.setOptions({ layouts: [copy_layout], elements: copy_elements})
 }
 ```
+
+```
+.on('dashboard:filters:changed', filtersChanged )
+```
+
+
+```
+const filtersChanged = (event: DashboardEvent) => {
+  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
+  // update layout to match KPI filter
+  if (gEvent) {
+    if (filters['KPIs']) {
+      newLayout(filters['KPIs'].split(',') )
+    } else {
+      newLayout([''])
+    }
+  }
+  gFilters = filters
+}
+```
+

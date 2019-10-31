@@ -35,7 +35,7 @@ let gDashboard: LookerEmbedDashboard
 
 const setupDashboard = (dashboard: LookerEmbedDashboard) => {
   gDashboard = dashboard
-  
+
 }
 
 const setupLook = (look: LookerEmbedLook) => {
