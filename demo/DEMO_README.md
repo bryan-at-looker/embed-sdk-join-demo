@@ -1,6 +1,8 @@
 # Adding the API
 Dropdown not dynamic, populate with data
 
+[Query we want to embed](https://johnkuitheme.dev.looker.com/explore/thelook/order_items?qid=YBvxBBvdwfNnmAwrsLz7Eu&toggle=fil)
+
 ### install SDK
 _to do_
 * `npm install @looker/sdk`
