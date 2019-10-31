@@ -6,52 +6,72 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Looker Embed SDK Demo</title>
   <script src="demo.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" />
+  <script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
   <style type="text/css">
     body {
-      text-align: center;
+      background-color: beige;
     }
     #dashboard {
-      width: 90vw;
-      height: 70vh;
-      margin: 40px auto;
-    }
-    #dashboard-state {
-      height: 30px;
-    }
-    #look {
-      width: 90vw;
-      height: 70vh;
-      margin: 40px auto;
-    }
-    #look-state {
-      height: 30px;
+      width: 95vw;
+      height: 90vh;
+      margin: auto;
     }
     .looker-embed {
       width: 100%;
       height: 100%;
     }
+    #topmenu {
+      background-color: beige;
+    }
+    h3 {
+      color: purple;
+    }
+    h5 {
+      color: purple;
+    } 
+
+
   </style>
 </head>
 <body>
-  <h1>Looker Embed SDK Demo Page</h1>
-  <div id="controls">
-    <label for="state">State: </label>
-    <select id="state">
-      <option value="">Select...</option>
-      <option value="California" selected>California</option>
-      <option value="Illinois">Illinois</option>
-      <option value="Minnesota">Minnesota</option>
-    </select>
-    <button id="run">Run</button>
+  <div id="topmenu" class="ui top three item borderless menu">
+    <div class="item">
+      <h3>CoolCompany.com Analytics</h3>
+    </div>
+    <div class="item">
+      <div id="state-filter" class="ui selection purple dropdown">
+        <input type="hidden" name="state">
+        <i class="chart line icon purple"></i>
+        <div class="default text">Trending States</div>
+        <div class="menu">
+          <div class="item" data-value="California">California</div>
+          <div class="item" data-value="New York">New York</div>
+          <div class="item" data-value="New York">Illinois</div>
+        </div>
+      </div>
+      <div id="dashboard-state">Loading...</div>
+      <div id="dropdown-selected"></div>
+    </div>
+    <div class="right menu">
+      <div class="item">
+        <i class="big signal icon black"></i>
+        <i class="big search icon purple"></i>
+        <i class="big wrench icon purple"></i>
+        <i class="big question circle icon purple"></i>
+        <i class="big user circle icon purple"></i>
+      </div>
+    </div>
   </div>
-  <div id="demo-dashboard">
-    <div id="dashboard-state">Loading...</div>
-    <div id="dashboard"></div>
-  </div>
-  <hr />
-  <div id="demo-look">
-    <div id="look-state">Loading...</div>
-   <div id="look"></div>
-  </div>
+  <div id="dashboard"></div>
 </body>
+<script>
+$('#state-filter')
+  .dropdown()
+;
+</script>
 </html>

@@ -149,10 +149,8 @@ export function createSignedUrl (
     user_attributes: params.user_attributes,
     access_filters: params.access_filters
   }
-
   const signature = signEmbedUrl(signingParams, secret)
 
   Object.assign(params, { signature })
-
   return `https://${host}${embedPath}?${stringify(params)}`
 }

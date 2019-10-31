@@ -1,18 +1,34 @@
+# Themed Application
 
+Switched over to your UI / your application where we will be embedding Looker into and start wrapping all the functionality together
 
-# Set up the embed SDK
-### What dashboard and look from what instance? [>>](./demo_config.ts?line=5)
-### User Setup [>>](./demo_user.json)
-### Set up your environment variables [>>](../.env)
+`npm install`
 
-## Start it up
 `npm start`
 
-- Dashboard and Look
-- Plain State Picker JS Events
-- Drill and show other event collection
-  - Adding new vents
-- Theme is ugly
-  - Lets add a different theme [>>](./demo.ts?line=80)
+Dashboard Next - Introduction
 
-Switch to branch demo-2
+Leaving Looks off for now (they're not as fun... yet)
+
+### Hook up the first filter like in the embed demo
+```
+const filtersChanged = (event: DashboardEvent) => {
+  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
+  // check for date change
+  if (gFilters && filters[dateMap[0]] && gFilters[dateMap[0]] && filters[dateMap[0]] !== gFilters[dateMap[0]]) {
+    gLookQuery = buildQuery(filters)
+    buildTrending();
+    gDashboard.run();
+  }
+  // update layout to match KPI filter
+  if (gEvent) {
+    if (filters[kpiFilter]) {
+      newLayout(filters[kpiFilter].split(',') )
+    } else {
+      newLayout([''])
+    }
+  }
+
+  gFilters = filters
+}
+```
