@@ -29,10 +29,7 @@ import { lookerHost, dashboardId, lookId } from './demo_config'
 LookerEmbedSDK.init(lookerHost, '/auth')
 
 const setupDashboard = (dashboard: LookerEmbedDashboard) => {
-  const runButton = document.querySelector('#run')
-  if (runButton) {
-    runButton.addEventListener('click', () => dashboard.run())
-  }
+
 }
 
 const setupLook = (look: LookerEmbedLook) => {

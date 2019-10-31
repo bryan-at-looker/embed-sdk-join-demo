@@ -11,24 +11,13 @@ Dashboard Next - Introduction
 Leaving Looks off for now (they're not as fun... yet)
 
 ### Hook up the first filter like in the embed demo
+Inside setupDashboard, we want to add our state listener
 ```
-const filtersChanged = (event: DashboardEvent) => {
-  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
-  // check for date change
-  if (gFilters && filters[dateMap[0]] && gFilters[dateMap[0]] && filters[dateMap[0]] !== gFilters[dateMap[0]]) {
-    gLookQuery = buildQuery(filters)
-    buildTrending();
-    gDashboard.run();
-  }
-  // update layout to match KPI filter
-  if (gEvent) {
-    if (filters[kpiFilter]) {
-      newLayout(filters[kpiFilter].split(',') )
-    } else {
-      newLayout([''])
-    }
-  }
-
-  gFilters = filters
+const stateFilter = document.querySelector('#state-filter')
+if (stateFilter) {
+  stateFilter.addEventListener('change', (event) => {
+    dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
+  })
 }
 ```
+
