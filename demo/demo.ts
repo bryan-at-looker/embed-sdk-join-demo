@@ -36,7 +36,7 @@ const setupDashboard = (dashboard: LookerEmbedDashboard) => {
   const stateFilter = document.querySelector('#state')
   if (stateFilter) {
     stateFilter.addEventListener('change', (event) => {
-      dashboard.updateFilters({ 'State / Region': (event.target as HTMLSelectElement).value })
+      dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
     })
   }
 }
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .on('dashboard:tile:explore', canceller)
       .on('dashboard:tile:view', canceller)
       .withClassName('looker-embed')
-      .withFilters({ 'State / Region': 'California' })
+      .withFilters({ 'State': 'California' })
       .build()
       .connect()
       .then(setupDashboard)
