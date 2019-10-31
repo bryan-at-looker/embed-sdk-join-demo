@@ -24,7 +24,7 @@ import { LookerEmbedSDK, LookerEmbedLook, LookerEmbedDashboard } from '../src/in
  * THE SOFTWARE.
  */
 
-import { lookerHost, dashboardId, lookId } from './demo_config'
+import { lookerHost, dashboardId, lookId, apiStateQuery, filterField, tempQueryResponse, filterFieldValue } from './demo_config'
 import { DashboardEvent, LookerEmbedFilterParams } from '../src/types'
 
 LookerEmbedSDK.init(lookerHost, '/auth')
@@ -35,7 +35,13 @@ let gDashboard: LookerEmbedDashboard
 
 const setupDashboard = (dashboard: LookerEmbedDashboard) => {
   gDashboard = dashboard
-
+  const stateFilter = document.querySelector('#state-filter')
+  if (stateFilter) {
+    stateFilter.addEventListener('change', (event) => {
+      dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
+      dashboard.run();  
+    })
+  }
 }
 
 const setupLook = (look: LookerEmbedLook) => {
@@ -49,6 +55,51 @@ const setupLook = (look: LookerEmbedLook) => {
       look.updateFilters({ 'users.state': (event.target as HTMLSelectElement).value })
     })
   }
+}
+
+const dashboardRunComplete = (event: DashboardEvent) => {
+  if (!gEvent || !gEvent.dashboard) {
+    gEvent = event
+  }
+  newLayout(event.dashboard.dashboard_filters['KPIs'].split(','))
+}
+
+const newLayout = (kpis: string[]) => {
+  var copy_options = JSON.parse(JSON.stringify(gEvent.dashboard.options));
+  const elements = copy_options.elements || {};
+  const layout = copy_options.layouts[0];
+  const components = (layout.dashboard_layout_components) ? layout.dashboard_layout_components : {};
+  var copy_layout = Object.assign({},layout)
+  
+  var new_components: any = []
+  
+  Object.keys(elements).forEach(el_key=>{
+    var comp_found = components.filter((c: any)=>{return c.dashboard_element_id.toString() === el_key})[0]
+    if (kpis.indexOf(elements[el_key]['title']) > -1) {
+      new_components.push(comp_found)
+    } else {
+      new_components.push(Object.assign(comp_found,{ row: 0, column: 0, height: 0, width: 0 }))
+    }
+  })
+  copy_layout.dashboard_layout_components = new_components
+  var copy_elements = Object.assign({},elements)
+  Object.keys(copy_elements).forEach(el_key=>{
+    copy_elements[el_key]['title_hidden'] = true
+  })
+  gDashboard.setOptions({ layouts: [copy_layout], elements: copy_elements})
+}
+
+const filtersChanged = (event: DashboardEvent) => {
+  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
+  // update layout to match KPI filter
+  if (gEvent) {
+    if (filters['KPIs']) {
+      newLayout(filters['KPIs'].split(',') )
+    } else {
+      newLayout([''])
+    }
+  }
+  gFilters = filters
 }
 
 const updateState = (selector: string, state: string) => {
@@ -68,6 +119,8 @@ document.addEventListener('DOMContentLoaded', function () {
     LookerEmbedSDK.createDashboardWithId(dashboardId)
       .appendTo('#dashboard')
       .withClassName('looker-embed')
+      .on('dashboard:run:complete', dashboardRunComplete)
+      .on('dashboard:filters:changed', filtersChanged)
       .build()
       .connect()
       .then(setupDashboard)
