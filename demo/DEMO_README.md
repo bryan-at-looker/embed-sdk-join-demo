@@ -49,8 +49,6 @@ const dashboardRunComplete = (event: DashboardEvent) => {
 }
 ```
 
-### What do these objects look like? [>>](https://johnkuitheme.dev.looker.com/applications/geppetto/tester)
-
 ### Logic to control the layout changes
 ```
 const newLayout = (kpis: string[]) => {

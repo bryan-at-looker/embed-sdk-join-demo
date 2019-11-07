@@ -10,7 +10,13 @@ let gDashboard: LookerEmbedDashboard
 
 const setupDashboard = (dashboard: LookerEmbedDashboard) => {
   gDashboard = dashboard
-
+  const stateFilter = document.querySelector('#state-filter')
+  if (stateFilter) {
+    stateFilter.addEventListener('change', (event) => {
+      dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
+      dashboard.run()
+    })
+  }
 }
 
 const setupLook = (look: LookerEmbedLook) => {
@@ -70,3 +76,4 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector<HTMLDivElement>('#demo-look')!.style.display = 'none'
   }
 })
+
