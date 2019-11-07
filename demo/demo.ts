@@ -9,7 +9,8 @@ let gFilters: LookerEmbedFilterParams
 let gDashboard: LookerEmbedDashboard
 
 const setupDashboard = (dashboard: LookerEmbedDashboard) => {
-  gDashboard = dashboard
+  gDashboard = dashboard  
+
 }
 
 const setupLook = (look: LookerEmbedLook) => {
@@ -69,4 +70,3 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector<HTMLDivElement>('#demo-look')!.style.display = 'none'
   }
 })
-
