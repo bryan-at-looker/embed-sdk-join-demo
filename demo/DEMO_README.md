@@ -26,6 +26,7 @@ but its not running on click... lets add a run event
 - Dense Dashboard, lets make it dynamic
 - [Edit Dashboard](https://johnkuitheme.dev.looker.com/dashboards/24)
 - Add KPIs filter (Active Users) as the Default
+  - Total Sale Price,Total Gross Margin,Active Users,Products Count
 - Add Filter Options in dNext
 - Selective Show KPI
 - Lets Code some more
@@ -47,6 +48,8 @@ const dashboardRunComplete = (event: DashboardEvent) => {
   newLayout(event.dashboard.dashboard_filters['KPIs'].split(','))
 }
 ```
+
+### What do these objects look like? [>>](https://johnkuitheme.dev.looker.com/applications/geppetto/tester)
 
 ### Logic to control the layout changes
 ```

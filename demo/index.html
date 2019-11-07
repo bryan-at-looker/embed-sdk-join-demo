@@ -1,4 +1,5 @@
 <html>
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
@@ -34,10 +35,17 @@
     h5 {
       color: purple;
     } 
+    #dashboard-state {
+      display: none
+    }
+    .iframe-highlight {
+      border-color: purple;
+    }
 
 
   </style>
 </head>
+
 <body>
   <div id="topmenu" class="ui top three item borderless menu">
     <div class="item">
@@ -46,9 +54,10 @@
     <div class="item">
       <div id="state-filter" class="ui selection purple dropdown">
         <input type="hidden" name="state">
-        <i class="chart line icon purple"></i>
-        <div class="default text">Trending States</div>
-        <div class="menu">
+        <i id="dropdown-icon" class="chart line icon purple"></i>
+        <div id="dropdown-icon-loader" class="ui active mini inline loader"  style="display: none;"></div>
+        <div id="dropdown-text" class="default text">Trending States</div>
+        <div id="dropdown-menu" class="menu">
           <div class="item" data-value="California">California</div>
           <div class="item" data-value="New York">New York</div>
           <div class="item" data-value="Illinois">Illinois</div>
@@ -59,8 +68,8 @@
     </div>
     <div class="right menu">
       <div class="item">
-        <i class="big signal icon black"></i>
-        <i class="big search icon purple"></i>
+        <i id="vis-swap" data-value="1" class="big chart pie icon purple"></i>
+        <i id="table-swap" data-value="0" class="big table icon black"></i>
         <i class="big wrench icon purple"></i>
         <i class="big question circle icon purple"></i>
         <i class="big user circle icon purple"></i>
