@@ -12,7 +12,7 @@
 - Plain State Picker JS Events
 - Drill and show other event collection
   - Adding new vents
-- Theme is ugly
+- Theme to match company
   - Lets add a different theme [>>](./demo.ts?line=80)
 
 Switch to branch demo-2
