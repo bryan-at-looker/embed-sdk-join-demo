@@ -5,9 +5,9 @@ Dropdown not dynamic, populate with data
 
 # SDK for the API
 
-- Gives developers many supported shortcuts (login, managing tokens, types, all call)
+- Gives developers many supported shortcuts (login, managing tokens, types, all calls)
 - CORS Compatibility
-  - Previously, every Looker API call needed to be server sided / proxied
+  - Previously, every Looker API call needed to be server-side / proxied
   - Opening up support for the browser to make authenticated requests
 
 ### SDK is installed
@@ -28,12 +28,8 @@ gSDK = new LookerSDK(session)
 ### Update the dropdown
 
 ```
-const buildTrending = async (dateFilter: string|null = null) => {
-  var query: any = apiStateQuery;
-  if (dateFilter && query && query['filters']) {
-    query['filters']['order_items.previous_period_filter'] = dateFilter
-  }
-  var query: any = await gSDK.ok(gSDK.create_query(query))
+const buildTrending = async () => {
+  var query: any = await gSDK.ok(gSDK.create_query(apiStateQuery))
   var data: any = await gSDK.ok(gSDK.run_query({
     result_format: 'json',
     query_id: query.id
