@@ -1,10 +1,10 @@
 {
-  "external_user_id": "joinuser",
+  "external_user_id": "joinuser-wtf-bryan2",
   "first_name": "JOIN",
   "last_name": "User",
   "email":"join.user@looker.com",
   "session_length": 3600,
-  "force_logout_login": false,
+  "force_logout_login": true,
   "external_group_id": "group1",
   "group_ids": [],
   "permissions": [
@@ -17,6 +17,6 @@
     "see_drill_overlay",
     "save_content"
   ],
-  "models": ["snow_look"],
+  "models": ["thelook"],
   "user_attributes": { "locale": "en_US" }
 }

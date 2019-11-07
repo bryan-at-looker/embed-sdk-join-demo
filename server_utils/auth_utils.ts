@@ -23,6 +23,20 @@
  */
 
 import * as createHmac from 'create-hmac'
+import { NodeSession, LookerSDK, IUser, NodeSettingsEnv } from '@looker/sdk'
+
+const settings = new NodeSettingsEnv()
+const session = new NodeSession(settings)
+const sdk = new LookerSDK(session)
+
+export async function accessToken (external_user_id: string) {
+  var user: IUser = await sdk.ok(sdk.user_for_credential('embed',external_user_id))
+  if (user && user.id) {
+    return await sdk.ok(sdk.login_user(user['id']))
+  } else {
+    return {}
+  }
+}
 
 function stringify (params: {[key: string]: string | undefined}) {
   const result = []
