@@ -24,7 +24,7 @@ but its not running on click... lets add a run event
 ### Dynamic Dashboards
 - Lets have FUN
 - Dense Dashboard, lets make it dynamic
-- [Edit Dashboard](https://master.dev.looker.com/dashboards/2467)
+- [Edit Dashboard](https://johnkuitheme.dev.looker.com/dashboards/24)
 - Add KPIs filter (Active Users) as the Default
 - Add Filter Options in dNext
 - Selective Show KPI
