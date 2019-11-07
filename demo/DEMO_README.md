@@ -2,11 +2,6 @@
 
 YourCompanyUI
 
-```
-npm install
-npm start
-```
-
 Dashboard Next - Introduction
 
 Leaving Looks off for now (they're not as fun... yet)

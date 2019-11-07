@@ -17,6 +17,6 @@
     "see_drill_overlay",
     "save_content"
   ],
-  "models": ["snow_look"],
+  "models": ["thelook"],
   "user_attributes": { "locale": "en_US" }
 }
