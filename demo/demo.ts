@@ -7,7 +7,7 @@ import {
   IAccessToken,
   IError,
   agentTag,
-  ProxySession,
+  ProxySession
 } from '@looker/sdk'
 import { lookerHost, dashboardId, lookId, apiStateQuery, filterField, filterFieldValue, visSwap } from './demo_config'
 
@@ -35,14 +35,13 @@ import { lookerHost, dashboardId, lookId, apiStateQuery, filterField, filterFiel
  * THE SOFTWARE.
  */
 
-
 LookerEmbedSDK.init(lookerHost, '/auth')
 
 let gEvent: DashboardEvent
-let gFilters: LookerEmbedFilterParams = {'KPIs': 'Total Sale Price,Active Users'}
+let gFilters: LookerEmbedFilterParams = { 'KPIs': 'Total Sale Price,Active Users' }
 let gDashboard: LookerEmbedDashboard
 let gSDK: LookerSDK
-let gUser: any = require('./demo_user.json')
+const gUser: any = require('./demo_user.json')
 
 /**
  * Proxy authentication session for this Embed demo
@@ -50,13 +49,13 @@ let gUser: any = require('./demo_user.json')
  */
 class EmbedSession extends ProxySession {
 
-  constructor(public settings: IApiSettings, transport?: ITransport) {
+  constructor (public settings: IApiSettings, transport?: ITransport) {
     super(settings, transport)
   }
 
-  async authenticate(props: any) {
+  async authenticate (props: any) {
     // get the auth token from the proxy server
-    const token = await getProxyToken(gUser.external_user_id);
+    const token = await getProxyToken(gUser.external_user_id)
     if (token) {
       // Assign the token, which will track its expiration time automatically
       this.activeToken.setToken(token)
@@ -94,15 +93,15 @@ const setupDashboard = async (dashboard: LookerEmbedDashboard) => {
   if (stateFilter) {
     stateFilter.addEventListener('change', (event) => {
       dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
-      dashboard.run();
+      dashboard.run()
     })
   }
 
-  buildTrending();
+  await buildTrending()
   const visSwapper = document.querySelector('#vis-swap')
   if (visSwapper) {
-    visSwapper.addEventListener('click', (event)=>{
-      if (gFilters && gFilters['KPIs'].indexOf('Active Users')>-1) {
+    visSwapper.addEventListener('click', (event) => {
+      if (gFilters && gFilters['KPIs'].indexOf('Active Users') > -1) {
         swapVis(visSwapper)
       }
     })
@@ -110,34 +109,36 @@ const setupDashboard = async (dashboard: LookerEmbedDashboard) => {
 
   const tableSwapper = document.querySelector('#table-swap')
   if (tableSwapper) {
-    tableSwapper.addEventListener('click', (event)=> {
+    tableSwapper.addEventListener('click', (event) => {
       if (gFilters && gFilters['KPIs']) {
-        tableSwap(tableSwapper);
+        tableSwap(tableSwapper)
       }
     })
   }
 }
 
 const tableSwap = (tableSwapper: any) => {
-  const which_to_swap: string[] = ['looker_line','looker_bar', 'looker_column', 'looker_area']
-  var new_elements: any = {}
-  const elements = (gEvent && gEvent.dashboard && gEvent.dashboard.options && gEvent.dashboard.options && gEvent.dashboard.options.elements) ? JSON.parse(JSON.stringify(gEvent.dashboard.options.elements)) : {}
+  const swapTargets = ['looker_line','looker_bar', 'looker_column', 'looker_area']
+  const newElements: any = {}
+  const elements = (gEvent && gEvent.dashboard && gEvent.dashboard.options && gEvent.dashboard.options && gEvent.dashboard.options.elements)
+    ? JSON.parse(JSON.stringify(gEvent.dashboard.options.elements))
+    : {}
   if (tableSwapper.getAttribute('data-value') === '0') {
-    Object.keys(elements).forEach((key: string)=>{
-      if (elements[key] && elements[key]['vis_config'] && elements[key]['vis_config']['type'] && which_to_swap.indexOf(elements[key]['vis_config']['type']) > -1) {
-        new_elements[key] = elements[key]
-        new_elements[key]['vis_config']['type'] = 'looker_grid'
+    Object.keys(elements).forEach((key: string) => {
+      if (elements[key] && elements[key]['vis_config'] && elements[key]['vis_config']['type'] && swapTargets.indexOf(elements[key]['vis_config']['type']) > -1) {
+        newElements[key] = elements[key]
+        newElements[key]['vis_config']['type'] = 'looker_grid'
       }
     })
     tableSwapper.setAttribute('data-value','1')
     tableSwapper.classList.add('purple')
     tableSwapper.classList.remove('black')
-    gDashboard.setOptions({elements: new_elements})
+    gDashboard.setOptions({ elements: newElements })
   } else {
-    Object.keys(elements).forEach((key: string)=>{
-      if (elements[key] && elements[key]['vis_config'] && elements[key]['vis_config']['type'] && which_to_swap.indexOf(elements[key]['vis_config']['type']) > -1) {
+    Object.keys(elements).forEach((key: string) => {
+      if (elements[key] && elements[key]['vis_config'] && elements[key]['vis_config']['type'] && swapTargets.indexOf(elements[key]['vis_config']['type']) > -1) {
         if (gFilters && gFilters['KPIs'] && gFilters['KPIs'].indexOf(elements[key]['title']) > -1) {
-          new_elements[key] = elements[key]
+          newElements[key] = elements[key]
         }
       }
     })
@@ -146,91 +147,94 @@ const tableSwap = (tableSwapper: any) => {
     tableSwapper.classList.remove('purple')
   }
 
-  if (new_elements !== {}) {
-    gDashboard.setOptions({elements: new_elements})
+  if (newElements !== {}) {
+    gDashboard.setOptions({ elements: newElements })
   }
 }
 
 const swapVis = (visSwapper: any) => {
-  const change_vis_config_props = Object.keys(visSwap);
-  const original = (gEvent && gEvent.dashboard && gEvent.dashboard.options && gEvent.dashboard.options.elements && gEvent.dashboard.options.elements['178']) ? gEvent.dashboard.options.elements['178'].vis_config : {}
-  var elements: any = {}    
+  const changeVisConfig = Object.keys(visSwap)
+  const original = (gEvent && gEvent.dashboard && gEvent.dashboard.options && gEvent.dashboard.options.elements && gEvent.dashboard.options.elements['178'])
+    ? gEvent.dashboard.options.elements['178'].vis_config
+    : {}
+  let elements: any = {}
   if (visSwapper.getAttribute('data-value') === '1') {
     visSwapper.classList.add('black')
     visSwapper.classList.remove('purple')
-    visSwapper.setAttribute('data-value', "0")
-    elements = {'178': {vis_config: visSwap}}
+    visSwapper.setAttribute('data-value', '0')
+    elements = { '178': { vis_config: visSwap } }
   } else {
     visSwapper.classList.add('purple')
     visSwapper.classList.remove('black')
-    visSwapper.setAttribute('data-value', "1")
-    elements = {'178': {vis_config: {}}}
-    change_vis_config_props.forEach(key=>{
+    visSwapper.setAttribute('data-value', '1')
+    elements = { '178': { vis_config: {} } }
+    changeVisConfig.forEach(key => {
       elements['178']['vis_config'][key] = original[key]
     })
   }
-  gDashboard.setOptions({elements})
+  gDashboard.setOptions({ elements })
 }
 
 const dropdownHeader = (innerHTML: string) => {
-  var header = document.createElement('div')
+  const header = document.createElement('div')
   header.classList.add('header')
   header.innerHTML = innerHTML
   return header
 }
 
 const dropdownItem = (row: any) => {
-  var item = document.createElement('div')
+  const item = document.createElement('div')
   item.setAttribute('data-value',row[filterField])
   item.classList.add('item')
   const options = (row[filterFieldValue] > 0) ? ['green','▲'] : (row[filterFieldValue] < 0) ? ['red','▼'] : ['black','']
-  const format = Number(row[filterFieldValue]).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:2});
+  const format = Number(row[filterFieldValue]).toLocaleString(undefined,{ style: 'percent', minimumFractionDigits: 2 })
   item.innerHTML = `${row[filterField]} <font color="${options[0]}">${options[1]} ${format}</font>`
   return item
 }
 
 const loadingIcon = (loading: boolean) => {
-  var loader = document.getElementById('dropdown-icon-loader')
-  var icon = document.getElementById('dropdown-icon')
+  const loader = document.getElementById('dropdown-icon-loader')
+  const icon = document.getElementById('dropdown-icon')
   if (loader && icon) {
     icon.style.display = (loading) ? 'none' : ''
     loader.style.display = (loading) ? '' : 'none'
   }
   if (loading) {
-    clearDropdown();
+    clearDropdown()
   }
 }
 
 const clearDropdown = () => {
-  var text = document.getElementById('dropdown-text')
+  const text = document.getElementById('dropdown-text')
   if (text) {
     text.innerHTML = 'Trending States'
     text.classList.add('default')
   }
 }
 
-const buildTrending = async (dateFilter: string|null = null) => {
-  var query: any = apiStateQuery;
-  if (dateFilter && query && query['filters']) {
-    query['filters']['order_items.previous_period_filter'] = dateFilter
+const buildTrending = async (dateFilter: string | null = null) => {
+  // Do you want to make a copy of this instead of modifying it directly?
+  const queryUpdate: any = apiStateQuery
+  if (dateFilter && queryUpdate && queryUpdate['filters']) {
+    queryUpdate['filters']['order_items.previous_period_filter'] = dateFilter
   }
-  var query: any = await gSDK.ok(gSDK.create_query(query))
-  var data: any = await gSDK.ok(gSDK.run_query({
+  const query: any = await gSDK.ok(gSDK.create_query(queryUpdate))
+  const data: any = await gSDK.ok(gSDK.run_query({
     result_format: 'json',
     query_id: query.id
   }))
-  loadingIcon(false);
-  var menu = document.createElement('div')
+  loadingIcon(false)
+  const menu = document.createElement('div')
   menu.appendChild(dropdownHeader('<h5>Top 5</h5>'))
-  data.slice(0,5).forEach((row: any)=>{
+  data.slice(0,5).forEach((row: any) => {
     menu.appendChild(dropdownItem(row))
   })
   menu.appendChild(dropdownHeader('<h5>Bottom 5</h5>'))
-  data.slice(-5).forEach((row: any)=>{
+  data.slice(-5).forEach((row: any) => {
     menu.appendChild(dropdownItem(row))
   })
 
-  var dropdown = document.getElementById('dropdown-menu')
+  const dropdown = document.getElementById('dropdown-menu')
   if (dropdown) {
     dropdown.innerHTML = menu.innerHTML || ''
   }
@@ -253,44 +257,44 @@ const dashboardRunComplete = (event: DashboardEvent) => {
   if (!gEvent || !gEvent.dashboard) {
     gEvent = event
   }
-  clearDropdown();
+  clearDropdown()
   newLayout(event.dashboard.dashboard_filters['KPIs'].split(','))
 }
 
 const newLayout = (kpis: string[]) => {
-  var copy_options = JSON.parse(JSON.stringify(gEvent.dashboard.options));
-  const elements = copy_options.elements || {};
-  const layout = copy_options.layouts[0];
-  const components = (layout.dashboard_layout_components) ? layout.dashboard_layout_components : {};
-  var copy_layout = Object.assign({},layout)
+  const copyOptions = JSON.parse(JSON.stringify(gEvent.dashboard.options))
+  const elements = copyOptions.elements || {}
+  const layout = copyOptions.layouts[0]
+  const components = (layout.dashboard_layout_components) ? layout.dashboard_layout_components : {}
+  const copyLayout = Object.assign({},layout)
 
-  var new_components: any = []
+  const newComponents: any = []
 
-  Object.keys(elements).forEach(el_key=>{
-    var comp_found = components.filter((c: any)=>{return c.dashboard_element_id.toString() === el_key})[0]
-    if (kpis.indexOf(elements[el_key]['title']) > -1) {
-      new_components.push(comp_found)
+  Object.keys(elements).forEach(key => {
+    const found = components.filter((c: any) => c.dashboard_element_id.toString() === key)[0]
+    if (kpis.indexOf(elements[key]['title']) > -1) {
+      newComponents.push(found)
     } else {
-      new_components.push(Object.assign(comp_found,{ row: 0, column: 0, height: 0, width: 0 }))
+      newComponents.push(Object.assign(found,{ row: 0, column: 0, height: 0, width: 0 }))
     }
   })
-  copy_layout.dashboard_layout_components = new_components
-  var copy_elements = Object.assign({},elements)
-  Object.keys(copy_elements).forEach(el_key=>{
-    copy_elements[el_key]['title_hidden'] = (copy_elements[el_key]['vis_config']['type']!=='single_value')
+  copyLayout.dashboard_layout_components = newComponents
+  const copies = Object.assign({},elements)
+  Object.keys(copies).forEach(key => {
+    copies[key]['title_hidden'] = (copies[key]['vis_config']['type'] !== 'single_value')
   })
-  gDashboard.setOptions({ layouts: [copy_layout], elements: copy_elements})
+  gDashboard.setOptions({ layouts: [copyLayout], elements: copies })
 }
 
-const filtersChanged = (event: DashboardEvent) => {
+const filtersChanged = async (event: DashboardEvent) => {
   const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
   const visSwapper = document.querySelector('#vis-swap')
   const tableSwapper = document.querySelector('#table-swap')
   // update layout to match KPI filter
   if (gEvent) {
-    if (filters['KPIs'])  {
+    if (filters['KPIs']) {
       if (gFilters && filters['KPIs'] !== gFilters['KPIs']) {
-        newLayout(filters['KPIs'].split(',') )
+        newLayout(filters['KPIs'].split(','))
         if (filters['KPIs'].indexOf('Active Users') === -1 && visSwapper) {
           visSwapper.setAttribute('data-value','1')
           visSwapper.classList.add('purple')
@@ -299,7 +303,7 @@ const filtersChanged = (event: DashboardEvent) => {
         } else {
           if (visSwapper) {
             visSwapper.classList.remove('disabled')
-          }          
+          }
         }
         if (tableSwapper) {
           tableSwapper.setAttribute('data-value','0')
@@ -311,15 +315,15 @@ const filtersChanged = (event: DashboardEvent) => {
       newLayout([''])
     }
     if (filters['Dates'] && gFilters && gFilters['Dates'] && filters['Dates'] !== gFilters['Dates']) {
-      loadingIcon(true);
-      buildTrending(filters['Dates']);
-      gDashboard.run();
+      loadingIcon(true)
+      await buildTrending(filters['Dates'])
+      gDashboard.run()
     }
     if ((filters['State'] && gFilters['State'] && filters['State'] !== gFilters['State'] ||
-        ( !filters['State'] && gFilters['State'] ) ||
-        ( filters['State'] && !gFilters['State'] )
+        (!filters['State'] && gFilters['State']) ||
+        (filters['State'] && !gFilters['State'])
     )) {
-      gDashboard.run();
+      gDashboard.run()
     }
   }
   gFilters = filters
@@ -344,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .withClassName('looker-embed')
       .withFilters(gFilters)
       .on('dashboard:run:complete', dashboardRunComplete)
-      .on('dashboard:filters:changed', filtersChanged) 
+      .on('dashboard:filters:changed', filtersChanged)
       .build()
       .connect()
       .then(setupDashboard)
@@ -377,10 +381,10 @@ interface IProxyToken {
   token: IAccessToken
 }
 
-const getProxyToken = async (external_user_id?: string) => {
+const getProxyToken = async (externalUserId?: string) => {
   const token = await gSDK.ok(gSDK.authSession.transport.request<IProxyToken,IError>('GET',
     // TODO use the config variable for the server URL
-    `http://embed.demo:8080/token${(external_user_id)?`?external_user_id=${external_user_id}`:''}`
+    `http://embed.demo:8080/token${(externalUserId) ? `?external_user_id=${externalUserId}` : ''}`
   ))
   return token.token
 }
