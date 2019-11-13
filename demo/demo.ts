@@ -9,7 +9,8 @@ import {
   agentTag,
   ProxySession
 } from '@looker/sdk'
-import { lookerHost, dashboardId, lookId, apiStateQuery, filterField, filterFieldValue, visSwap } from './demo_config'
+import { lookerHost, dashboardId, lookId } from './demo_config'
+import { clearDropdown, loadingIcon, buildTrending, tableSwap, swapVis, newLayout } from './demo_helpers'
 
 /*
  * The MIT License (MIT)
@@ -87,22 +88,34 @@ const session = new EmbedSession({
 } as IApiSettings)
 gSDK = new LookerSDK(session)
 
+interface IProxyToken {
+  token: IAccessToken
+}
+
+const getProxyToken = async (externalUserId?: string) => {
+  const token = await gSDK.ok(gSDK.authSession.transport.request<IProxyToken,IError>('GET',
+    // TODO use the config variable for the server URL
+    `http://embed.demo:8080/token${(externalUserId) ? `?external_user_id=${externalUserId}` : ''}`
+  ))
+  return token.token
+}
+
 const setupDashboard = async (dashboard: LookerEmbedDashboard) => {
   gDashboard = dashboard
-  const stateFilter = document.querySelector('#state-filter')
-  if (stateFilter) {
-    stateFilter.addEventListener('change', (event) => {
+  const dropdownFilter = document.querySelector('#dropdown-filter')
+  if (dropdownFilter) {
+    dropdownFilter.addEventListener('change', (event) => {
       dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
       dashboard.run()
     })
   }
 
-  await buildTrending()
+  await buildTrending(null, gSDK)
   const visSwapper = document.querySelector('#vis-swap')
   if (visSwapper) {
     visSwapper.addEventListener('click', (event) => {
       if (gFilters && gFilters['KPIs'].indexOf('Active Users') > -1) {
-        swapVis(visSwapper)
+        swapVis(visSwapper, gEvent, gDashboard)
       }
     })
   }
@@ -111,132 +124,9 @@ const setupDashboard = async (dashboard: LookerEmbedDashboard) => {
   if (tableSwapper) {
     tableSwapper.addEventListener('click', (event) => {
       if (gFilters && gFilters['KPIs']) {
-        tableSwap(tableSwapper)
+        tableSwap(tableSwapper, gEvent, gDashboard, gFilters)
       }
     })
-  }
-}
-
-const tableSwap = (tableSwapper: any) => {
-  const swapTargets = ['looker_line','looker_bar', 'looker_column', 'looker_area']
-  const newElements: any = {}
-  const elements = (gEvent && gEvent.dashboard && gEvent.dashboard.options && gEvent.dashboard.options && gEvent.dashboard.options.elements)
-    ? JSON.parse(JSON.stringify(gEvent.dashboard.options.elements))
-    : {}
-  if (tableSwapper.getAttribute('data-value') === '0') {
-    Object.keys(elements).forEach((key: string) => {
-      if (elements[key] && elements[key]['vis_config'] && elements[key]['vis_config']['type'] && swapTargets.indexOf(elements[key]['vis_config']['type']) > -1) {
-        newElements[key] = elements[key]
-        newElements[key]['vis_config']['type'] = 'looker_grid'
-      }
-    })
-    tableSwapper.setAttribute('data-value','1')
-    tableSwapper.classList.add('purple')
-    tableSwapper.classList.remove('black')
-    gDashboard.setOptions({ elements: newElements })
-  } else {
-    Object.keys(elements).forEach((key: string) => {
-      if (elements[key] && elements[key]['vis_config'] && elements[key]['vis_config']['type'] && swapTargets.indexOf(elements[key]['vis_config']['type']) > -1) {
-        if (gFilters && gFilters['KPIs'] && gFilters['KPIs'].indexOf(elements[key]['title']) > -1) {
-          newElements[key] = elements[key]
-        }
-      }
-    })
-    tableSwapper.setAttribute('data-value','0')
-    tableSwapper.classList.add('black')
-    tableSwapper.classList.remove('purple')
-  }
-
-  if (newElements !== {}) {
-    gDashboard.setOptions({ elements: newElements })
-  }
-}
-
-const swapVis = (visSwapper: any) => {
-  const changeVisConfig = Object.keys(visSwap)
-  const original = (gEvent && gEvent.dashboard && gEvent.dashboard.options && gEvent.dashboard.options.elements && gEvent.dashboard.options.elements['178'])
-    ? gEvent.dashboard.options.elements['178'].vis_config
-    : {}
-  let elements: any = {}
-  if (visSwapper.getAttribute('data-value') === '1') {
-    visSwapper.classList.add('black')
-    visSwapper.classList.remove('purple')
-    visSwapper.setAttribute('data-value', '0')
-    elements = { '178': { vis_config: visSwap } }
-  } else {
-    visSwapper.classList.add('purple')
-    visSwapper.classList.remove('black')
-    visSwapper.setAttribute('data-value', '1')
-    elements = { '178': { vis_config: {} } }
-    changeVisConfig.forEach(key => {
-      elements['178']['vis_config'][key] = original[key]
-    })
-  }
-  gDashboard.setOptions({ elements })
-}
-
-const dropdownHeader = (innerHTML: string) => {
-  const header = document.createElement('div')
-  header.classList.add('header')
-  header.innerHTML = innerHTML
-  return header
-}
-
-const dropdownItem = (row: any) => {
-  const item = document.createElement('div')
-  item.setAttribute('data-value',row[filterField])
-  item.classList.add('item')
-  const options = (row[filterFieldValue] > 0) ? ['green','▲'] : (row[filterFieldValue] < 0) ? ['red','▼'] : ['black','']
-  const format = Number(row[filterFieldValue]).toLocaleString(undefined,{ style: 'percent', minimumFractionDigits: 2 })
-  item.innerHTML = `${row[filterField]} <font color="${options[0]}">${options[1]} ${format}</font>`
-  return item
-}
-
-const loadingIcon = (loading: boolean) => {
-  const loader = document.getElementById('dropdown-icon-loader')
-  const icon = document.getElementById('dropdown-icon')
-  if (loader && icon) {
-    icon.style.display = (loading) ? 'none' : ''
-    loader.style.display = (loading) ? '' : 'none'
-  }
-  if (loading) {
-    clearDropdown()
-  }
-}
-
-const clearDropdown = () => {
-  const text = document.getElementById('dropdown-text')
-  if (text) {
-    text.innerHTML = 'Trending States'
-    text.classList.add('default')
-  }
-}
-
-const buildTrending = async (dateFilter: string | null = null) => {
-  // Do you want to make a copy of this instead of modifying it directly?
-  const queryUpdate: any = apiStateQuery
-  if (dateFilter && queryUpdate && queryUpdate['filters']) {
-    queryUpdate['filters']['order_items.previous_period_filter'] = dateFilter
-  }
-  const query: any = await gSDK.ok(gSDK.create_query(queryUpdate))
-  const data: any = await gSDK.ok(gSDK.run_query({
-    result_format: 'json',
-    query_id: query.id
-  }))
-  loadingIcon(false)
-  const menu = document.createElement('div')
-  menu.appendChild(dropdownHeader('<h5>Top 5</h5>'))
-  data.slice(0,5).forEach((row: any) => {
-    menu.appendChild(dropdownItem(row))
-  })
-  menu.appendChild(dropdownHeader('<h5>Bottom 5</h5>'))
-  data.slice(-5).forEach((row: any) => {
-    menu.appendChild(dropdownItem(row))
-  })
-
-  const dropdown = document.getElementById('dropdown-menu')
-  if (dropdown) {
-    dropdown.innerHTML = menu.innerHTML || ''
   }
 }
 
@@ -245,9 +135,9 @@ const setupLook = (look: LookerEmbedLook) => {
   if (runButton) {
     runButton.addEventListener('click', () => look.run())
   }
-  const stateFilter = document.querySelector('#state')
-  if (stateFilter) {
-    stateFilter.addEventListener('change', (event) => {
+  const dropdownFilter = document.querySelector('#state')
+  if (dropdownFilter) {
+    dropdownFilter.addEventListener('change', (event) => {
       look.updateFilters({ 'users.state': (event.target as HTMLSelectElement).value })
     })
   }
@@ -258,87 +148,7 @@ const dashboardRunComplete = (event: DashboardEvent) => {
     gEvent = event
   }
   clearDropdown()
-  newLayout(event.dashboard.dashboard_filters['KPIs'].split(','))
-}
-
-const newLayout = (kpis: string[]) => {
-  const copyOptions = JSON.parse(JSON.stringify(gEvent.dashboard.options))
-  const elements = copyOptions.elements || {}
-  const layout = copyOptions.layouts[0]
-  const components = (layout.dashboard_layout_components) ? layout.dashboard_layout_components : {}
-  const copyLayout = Object.assign({},layout)
-
-  const newComponents: any = []
-
-  Object.keys(elements).forEach(key => {
-    const found = components.filter((c: any) => c.dashboard_element_id.toString() === key)[0]
-    if (kpis.indexOf(elements[key]['title']) > -1) {
-      newComponents.push(found)
-    } else {
-      newComponents.push(Object.assign(found,{ row: 0, column: 0, height: 0, width: 0 }))
-    }
-  })
-  copyLayout.dashboard_layout_components = newComponents
-  const copies = Object.assign({},elements)
-  Object.keys(copies).forEach(key => {
-    copies[key]['title_hidden'] = (copies[key]['vis_config']['type'] !== 'single_value')
-  })
-  gDashboard.setOptions({ layouts: [copyLayout], elements: copies })
-}
-
-const filtersChanged = async (event: DashboardEvent) => {
-  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
-  const visSwapper = document.querySelector('#vis-swap')
-  const tableSwapper = document.querySelector('#table-swap')
-  // update layout to match KPI filter
-  if (gEvent) {
-    if (filters['KPIs']) {
-      if (gFilters && filters['KPIs'] !== gFilters['KPIs']) {
-        newLayout(filters['KPIs'].split(','))
-        if (filters['KPIs'].indexOf('Active Users') === -1 && visSwapper) {
-          visSwapper.setAttribute('data-value','1')
-          visSwapper.classList.add('purple')
-          visSwapper.classList.add('disabled')
-          visSwapper.classList.remove('black')
-        } else {
-          if (visSwapper) {
-            visSwapper.classList.remove('disabled')
-          }
-        }
-        if (tableSwapper) {
-          tableSwapper.setAttribute('data-value','0')
-          tableSwapper.classList.add('black')
-          tableSwapper.classList.remove('purple')
-        }
-      }
-    } else {
-      newLayout([''])
-    }
-    if (filters['Dates'] && gFilters && gFilters['Dates'] && filters['Dates'] !== gFilters['Dates']) {
-      loadingIcon(true)
-      await buildTrending(filters['Dates'])
-      gDashboard.run()
-    }
-    if ((filters['State'] && gFilters['State'] && filters['State'] !== gFilters['State'] ||
-        (!filters['State'] && gFilters['State']) ||
-        (filters['State'] && !gFilters['State'])
-    )) {
-      gDashboard.run()
-    }
-  }
-  gFilters = filters
-}
-
-const updateState = (selector: string, state: string) => {
-  const dashboardState = document.querySelector(selector)
-  if (dashboardState) {
-    dashboardState.textContent = state
-  }
-}
-
-const canceller = (event: any) => {
-  updateState('#dashboard-state', `${event.label} clicked`)
-  return { cancel: !event.modal }
+  newLayout(event.dashboard.dashboard_filters['KPIs'].split(','), gDashboard, gEvent)
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -377,14 +187,60 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 })
 
-interface IProxyToken {
-  token: IAccessToken
+const updateState = (selector: string, state: string) => {
+  const dashboardState = document.querySelector(selector)
+  if (dashboardState) {
+    dashboardState.textContent = state
+  }
 }
 
-const getProxyToken = async (externalUserId?: string) => {
-  const token = await gSDK.ok(gSDK.authSession.transport.request<IProxyToken,IError>('GET',
-    // TODO use the config variable for the server URL
-    `http://embed.demo:8080/token${(externalUserId) ? `?external_user_id=${externalUserId}` : ''}`
-  ))
-  return token.token
+const canceller = (event: any) => {
+  updateState('#dashboard-state', `${event.label} clicked`)
+  return { cancel: !event.modal }
+}
+
+
+// Javascript Event handlers
+
+const filtersChanged = async (event: DashboardEvent) => {
+  const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
+  const visSwapper = document.querySelector('#vis-swap')
+  const tableSwapper = document.querySelector('#table-swap')
+  // update layout to match KPI filter
+  if (gEvent) {
+    if (filters['KPIs']) {
+      if (gFilters && filters['KPIs'] !== gFilters['KPIs']) {
+        newLayout(filters['KPIs'].split(','), gDashboard, gEvent)
+        if (filters['KPIs'].indexOf('Active Users') === -1 && visSwapper) {
+          visSwapper.setAttribute('data-value','1')
+          visSwapper.classList.add('purple')
+          visSwapper.classList.add('disabled')
+          visSwapper.classList.remove('black')
+        } else {
+          if (visSwapper) {
+            visSwapper.classList.remove('disabled')
+          }
+        }
+        if (tableSwapper) {
+          tableSwapper.setAttribute('data-value','0')
+          tableSwapper.classList.add('black')
+          tableSwapper.classList.remove('purple')
+        }
+      }
+    } else {
+      newLayout([''], gDashboard, gEvent)
+    }
+    if (filters['Dates'] && gFilters && gFilters['Dates'] && filters['Dates'] !== gFilters['Dates']) {
+      loadingIcon(true)
+      await buildTrending(filters['Dates'], gSDK)
+      gDashboard.run()
+    }
+    if ((filters['State'] && gFilters['State'] && filters['State'] !== gFilters['State'] ||
+        (!filters['State'] && gFilters['State']) ||
+        (filters['State'] && !gFilters['State'])
+    )) {
+      gDashboard.run()
+    }
+  }
+  gFilters = filters
 }
