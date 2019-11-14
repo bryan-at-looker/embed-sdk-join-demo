@@ -1,4 +1,4 @@
-import { queryFilterField, queryMeasureField, apiDropdownQuery, visSwap } from "./demo_config"
+import { queryFilterField, queryMeasureField, apiDropdownQuery, visSwap, elementToVisSwap } from "./demo_config"
 import { LookerSDK } from "@looker/sdk"
 import { DashboardEvent, LookerEmbedFilterParams, LookerEmbedEvent } from "../src/types"
 import { LookerEmbedDashboard } from "../src"
@@ -56,15 +56,9 @@ export const buildTrending = async (dateFilter: string | null = null, SDK: Looke
   console.log(data)
   loadingIcon(false)
   const menu = document.createElement('div')
-  menu.appendChild(dropdownHeader('<h5>Top 5</h5>'))
-  data.slice(0,5).forEach((row: any) => {
+  data.forEach((row: any) => {
     menu.appendChild(dropdownItem(row))
   })
-  menu.appendChild(dropdownHeader('<h5>Bottom 5</h5>'))
-  data.slice(-5).forEach((row: any) => {
-    menu.appendChild(dropdownItem(row))
-  })
-
   const dropdown = document.getElementById('dropdown-menu')
   if (dropdown) {
     dropdown.innerHTML = menu.innerHTML || ''
@@ -108,48 +102,23 @@ export const tableSwap = (tableSwapper: any, Event: DashboardEvent, Dashboard: L
 
 export const swapVis = (visSwapper: any, Event: DashboardEvent, Dashboard: LookerEmbedDashboard) => {
   const changeVisConfig = Object.keys(visSwap)
-  const original = (Event && Event.dashboard && Event.dashboard.options && Event.dashboard.options.elements && Event.dashboard.options.elements['178'])
-    ? Event.dashboard.options.elements['178'].vis_config
+  const original = (Event && Event.dashboard && Event.dashboard.options && Event.dashboard.options.elements && Event.dashboard.options.elements[elementToVisSwap])
+    ? Event.dashboard.options.elements[elementToVisSwap].vis_config
     : {}
   let elements: any = {}
   if (visSwapper.getAttribute('data-value') === '1') {
     visSwapper.classList.add('black')
     visSwapper.classList.remove('purple')
     visSwapper.setAttribute('data-value', '0')
-    elements = { '178': { vis_config: visSwap } }
+    elements = { [elementToVisSwap]: { vis_config: visSwap } }
   } else {
     visSwapper.classList.add('purple')
     visSwapper.classList.remove('black')
     visSwapper.setAttribute('data-value', '1')
-    elements = { '178': { vis_config: {} } }
+    elements = { [elementToVisSwap]: { vis_config: {} } }
     changeVisConfig.forEach(key => {
-      elements['178']['vis_config'][key] = original[key]
+      elements[elementToVisSwap]['vis_config'][key] = original[key]
     })
   }
   Dashboard.setOptions({ elements })
-}
-
-export const newLayout = (kpis: string[], Dashboard: LookerEmbedDashboard, Event: LookerEmbedEvent) => {
-  const copyOptions = JSON.parse(JSON.stringify(Event.dashboard.options))
-  const elements = copyOptions.elements || {}
-  const layout = copyOptions.layouts[0]
-  const components = (layout.dashboard_layout_components) ? layout.dashboard_layout_components : {}
-  const copyLayout = Object.assign({},layout)
-
-  const newComponents: any = []
-
-  Object.keys(elements).forEach(key => {
-    const found = components.filter((c: any) => c.dashboard_element_id.toString() === key)[0]
-    if (kpis.indexOf(elements[key]['title']) > -1) {
-      newComponents.push(found)
-    } else {
-      newComponents.push(Object.assign(found,{ row: 0, column: 0, height: 0, width: 0 }))
-    }
-  })
-  copyLayout.dashboard_layout_components = newComponents
-  const copies = Object.assign({},elements)
-  Object.keys(copies).forEach(key => {
-    copies[key]['title_hidden'] = (copies[key]['vis_config']['type'] !== 'single_value')
-  })
-  Dashboard.setOptions({ layouts: [copyLayout], elements: copies })
 }

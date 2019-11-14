@@ -10,9 +10,12 @@ export const lookId = 0
 
 export const queryFilterField: string = 'users.state'
 export const dashboardFilterField: string = 'State'
+export const elementToVisSwap: string = '178'
 
 export const queryMeasureField: string = 'order_items.total_sale_price_period_change'
 export const dashboardFilterDate: string = 'Dates'
+
+export const logoUrl: string = 'https://www.phoenixtma.com/wp-content/uploads/2018/05/PHOENIX_LOGO_min.png'
 
 export const apiDropdownQuery = {
   model: 'thelook',

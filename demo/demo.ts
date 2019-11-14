@@ -9,8 +9,8 @@ import {
   agentTag,
   ProxySession
 } from '@looker/sdk'
-import { lookerHost, dashboardId, lookId } from './demo_config'
-import { clearDropdown, loadingIcon, buildTrending, tableSwap, swapVis, newLayout } from './demo_helpers'
+import { lookerHost, dashboardId, lookId, dashboardFilterDate, dashboardFilterField, logoUrl } from './demo_config'
+import { clearDropdown, loadingIcon, buildTrending, tableSwap, swapVis } from './demo_helpers'
 
 /*
  * The MIT License (MIT)
@@ -105,7 +105,7 @@ const setupDashboard = async (dashboard: LookerEmbedDashboard) => {
   const dropdownFilter = document.querySelector('#dropdown-filter')
   if (dropdownFilter) {
     dropdownFilter.addEventListener('change', (event) => {
-      dashboard.updateFilters({ 'State': (event.target as HTMLSelectElement).value })
+      dashboard.updateFilters({ [dashboardFilterField]: (event.target as HTMLSelectElement).value })
       dashboard.run()
     })
   }
@@ -114,9 +114,7 @@ const setupDashboard = async (dashboard: LookerEmbedDashboard) => {
   const visSwapper = document.querySelector('#vis-swap')
   if (visSwapper) {
     visSwapper.addEventListener('click', (event) => {
-      if (gFilters && gFilters['KPIs'].indexOf('Active Users') > -1) {
-        swapVis(visSwapper, gEvent, gDashboard)
-      }
+      swapVis(visSwapper, gEvent, gDashboard)
     })
   }
 
@@ -148,10 +146,11 @@ const dashboardRunComplete = (event: DashboardEvent) => {
     gEvent = event
   }
   clearDropdown()
-  newLayout(event.dashboard.dashboard_filters['KPIs'].split(','), gDashboard, gEvent)
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  const logo = document.getElementById('logo')
+  if (logo) { logo.setAttribute('src',logoUrl)}
   if (dashboardId) {
     LookerEmbedSDK.createDashboardWithId(dashboardId)
       .appendTo('#dashboard')
@@ -204,40 +203,15 @@ const canceller = (event: any) => {
 
 const filtersChanged = async (event: DashboardEvent) => {
   const filters = (event.dashboard.dashboard_filters) ? event.dashboard.dashboard_filters : {}
-  const visSwapper = document.querySelector('#vis-swap')
-  const tableSwapper = document.querySelector('#table-swap')
-  // update layout to match KPI filter
   if (gEvent) {
-    if (filters['KPIs']) {
-      if (gFilters && filters['KPIs'] !== gFilters['KPIs']) {
-        newLayout(filters['KPIs'].split(','), gDashboard, gEvent)
-        if (filters['KPIs'].indexOf('Active Users') === -1 && visSwapper) {
-          visSwapper.setAttribute('data-value','1')
-          visSwapper.classList.add('purple')
-          visSwapper.classList.add('disabled')
-          visSwapper.classList.remove('black')
-        } else {
-          if (visSwapper) {
-            visSwapper.classList.remove('disabled')
-          }
-        }
-        if (tableSwapper) {
-          tableSwapper.setAttribute('data-value','0')
-          tableSwapper.classList.add('black')
-          tableSwapper.classList.remove('purple')
-        }
-      }
-    } else {
-      newLayout([''], gDashboard, gEvent)
-    }
-    if (filters['Dates'] && gFilters && gFilters['Dates'] && filters['Dates'] !== gFilters['Dates']) {
+    if (filters[dashboardFilterDate] && gFilters && gFilters[dashboardFilterDate] && filters[dashboardFilterDate] !== gFilters[dashboardFilterDate]) {
       loadingIcon(true)
-      await buildTrending(filters['Dates'], gSDK)
+      await buildTrending(filters[dashboardFilterDate], gSDK)
       gDashboard.run()
     }
-    if ((filters['State'] && gFilters['State'] && filters['State'] !== gFilters['State'] ||
-        (!filters['State'] && gFilters['State']) ||
-        (filters['State'] && !gFilters['State'])
+    if ((filters[dashboardFilterField] && gFilters[dashboardFilterField] && filters[dashboardFilterField] !== gFilters[dashboardFilterField] ||
+        (!filters[dashboardFilterField] && gFilters[dashboardFilterField]) ||
+        (filters[dashboardFilterField] && !gFilters[dashboardFilterField])
     )) {
       gDashboard.run()
     }
