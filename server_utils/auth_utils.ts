@@ -38,6 +38,15 @@ export async function accessToken (external_user_id: string) {
   }
 }
 
+export async function runQuery (query: any) {
+  const q: any = await sdk.ok(sdk.create_query(query))
+  const data: any = await sdk.ok(sdk.run_query({
+    result_format: 'json',
+    query_id: q.id
+  }))
+  return data
+}
+
 function stringify (params: {[key: string]: string | undefined}) {
   const result = []
   for (const key in params) {

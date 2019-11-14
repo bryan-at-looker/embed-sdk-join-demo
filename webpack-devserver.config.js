@@ -1,7 +1,8 @@
 var path = require('path')
 var config = require('./config')
 var user = require('./demo/demo_user.json')
-var { createSignedUrl, accessToken } = require('./server_utils/auth_utils')
+var bodyParser = require('body-parser');
+var { createSignedUrl, accessToken, runQuery } = require('./server_utils/auth_utils')
 
 var webpackConfig = {
     mode: 'development',
@@ -48,6 +49,10 @@ var webpackConfig = {
         ],
         watchContentBase: true,
         before: (app) => {
+            app.use(bodyParser.json());
+            app.use(bodyParser.urlencoded({
+                extended: true
+            }));
             app.get('/auth', async function(req, res) {
                 // Authenticate the request is from a valid user here
                 const src = req.query.src;
@@ -58,6 +63,12 @@ var webpackConfig = {
                 // Authenticate the request is from a valid user here
                 const token = await accessToken(req['query']['external_user_id']);
                 res.json({ token });
+            });
+            app.get('/query', async function(req, res) {
+                // Authenticate the request is from a valid user here
+                const query = JSON.parse(req.query.Query)
+                const data = await runQuery(query);
+                res.json(data);
             });
         }
     }

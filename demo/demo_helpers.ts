@@ -46,11 +46,14 @@ export const buildTrending = async (dateFilter: string | null = null, SDK: Looke
   if (dateFilter && queryUpdate && queryUpdate['filters']) {
     queryUpdate['filters']['order_items.previous_period_filter'] = dateFilter
   }
-  const query: any = await SDK.ok(SDK.create_query(queryUpdate))
-  const data: any = await SDK.ok(SDK.run_query({
-    result_format: 'json',
-    query_id: query.id
-  }))
+  // const query: any = await SDK.ok(SDK.create_query(queryUpdate))
+  // const data: any = await SDK.ok(SDK.run_query({
+  //   result_format: 'json',
+  //   query_id: query.id
+  // }))
+  const query: any = await fetch(`/query?Query=${JSON.stringify(queryUpdate)}`)
+  const data = await query.json()
+  console.log(data)
   loadingIcon(false)
   const menu = document.createElement('div')
   menu.appendChild(dropdownHeader('<h5>Top 5</h5>'))
